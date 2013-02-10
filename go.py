@@ -9,14 +9,12 @@ base_url = 'http://www.sheknows.com'
 user = dict(
     first_name = "Terrence",
     last_name = "Brannon",
-    phone = "818-359-0893",
+    phone_number = "818-359-0893",
     address = "713 Chadford Rd",
     city = "Irmo",
     state = "usa-sc",
     zip = "29063"
 )
-
-user_to
 
 
 def contest_url(path):
@@ -24,8 +22,7 @@ def contest_url(path):
 
 def contest_urls(browser):
     contests = browser.find_by_xpath('//*[@id="carousel_list"]/li')
-    for contest in contests:
-        yield contest_url(contest['data-url'])
+    return [contest_url(contest['data-url']) for contest in contests]
 
 def click_submit():
     button = browser.find_by_xpath('//*[@class="submit button"]')
@@ -36,8 +33,31 @@ def enter_email(url):
     browser.fill("data[GiveawayEntry][email]", 'schemelab@gmail.com')
     click_submit()
 
+def enter_contact_info(url):
+    for k, v in user.items():
+        if k == 'state': continue
+        field_name = "data[GiveawayEntry][{0}]".format(k)
+        if k == 'address' or k == 'city' or k == 'zip':
+            field_name = "data[GiveawayEntryAddress][{0}]".format(k)
+        browser.fill(field_name, v)
+    e = browser.find_by_xpath(
+        '//*[@value="{0}"]'.format(user['state'])
+    )
+    e._element.click()
+    click_submit()
+
+def confirm_info():
+    browser.find_by_xpath('//*[@class="button button-yes"]').click()
+
+def accept_terms():
+    browser.find_by_xpath('//*[@class="button"]').click()
+
 def enter_contest(u):
     enter_email(u)
+    enter_contact_info(u)
+    confirm_info()
+    accept_terms()
+    pdb.set_trace()
 
 with Browser() as browser:
     # Visit URL
@@ -47,8 +67,7 @@ with Browser() as browser:
     for u in contest_urls(browser):
         enter_contest(u)
 
-    # Interact with elements
-    button.click()
+
     if browser.is_text_present('splinter.cobrateam.info'):
         print "Yes, the official website was found!"
     else:
