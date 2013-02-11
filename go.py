@@ -45,13 +45,16 @@ class ContestEntry(object):
     def _enter_email(self):
         self.browser.fill(self.email_name_attribute, user['email'])
 
+    def click_email_submit(self):
+        button = self.browser.find_by_xpath('//*[@class="submit button"]')
+        button.click()
+
     def enter_email(self):
         self._enter_email()
-        self.click_submit()
+        self.click_email_submit()
 
     def enter_contact_info(self):
         for k, v in user.items():
-            if k == 'phone_number': pdb.set_trace()
             if k == 'state': continue
             field_name = "data[GiveawayEntry][{0}]".format(k)
             if k == 'address' or k == 'city' or k == 'zip':
@@ -145,7 +148,6 @@ class ContestEntry3(ContestEntry2):
         self.click_enter_now()
 
         self.enter_contact_info()
-        pdb.set_trace()
         self.confirm_info()
         self.accept_terms()
 
@@ -163,11 +165,14 @@ with Browser() as browser:
 
     for url in contest_urls(browser):
 
-        if ContestEntry.mystyle(url):
-            pass #ContestEntry(browser, url).enter_contest()
-        elif ContestEntry2.mystyle(url):
-            pass #ContestEntry2(browser, url).enter_contest()
-        elif ContestEntry3.mystyle(url):
-            ContestEntry3(browser, url).enter_contest()
-        else:
-            print "Ignoring {0}".format(url)
+        try:
+            if ContestEntry.mystyle(url):
+                ContestEntry(browser, url).enter_contest()
+            elif ContestEntry2.mystyle(url):
+                ContestEntry2(browser, url).enter_contest()
+            elif ContestEntry3.mystyle(url):
+                ContestEntry3(browser, url).enter_contest()
+            else:
+                print "Ignoring {0}".format(url)
+        except:
+            print "CAUGHT EXCEPTION. CONTINUING"
