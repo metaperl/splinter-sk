@@ -51,6 +51,7 @@ class ContestEntry(object):
 
     def enter_contact_info(self):
         for k, v in user.items():
+            if k == 'phone_number': pdb.set_trace()
             if k == 'state': continue
             field_name = "data[GiveawayEntry][{0}]".format(k)
             if k == 'address' or k == 'city' or k == 'zip':
@@ -121,20 +122,13 @@ class ContestEntry3(ContestEntry2):
         button = self.browser.find_by_xpath('//*[@class="giveaway-button"]')
         button.click()
 
-    def submit_contact_info(self):
-        button = self.browser.find_by_xpath(
-            '//*[@class="giveaway-button-default"]'
-        )
-        button.click()
-
     def click_enter_now(self):
-        elems = self.browser.find_by_xpath(
-            "//a[matches(@href, 'giveaway.*enter')]"
-        )
+        elems = self.browser.find_by_xpath("//a[contains(@href, 'enter')]")
+
         for elem in elems:
+            print "<ELEM>{0}</ELEM>".format(elem['href'])
             if elem['href'].endswith('enter'):
                 button = elem
-        pdb.set_trace()
         button.click()
 
     def confirm_info(self):
@@ -150,8 +144,8 @@ class ContestEntry3(ContestEntry2):
 
         self.click_enter_now()
 
-        self.enter_email()
         self.enter_contact_info()
+        pdb.set_trace()
         self.confirm_info()
         self.accept_terms()
 
