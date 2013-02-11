@@ -128,9 +128,12 @@ class ContestEntry3(ContestEntry2):
         button.click()
 
     def click_enter_now(self):
-        button = self.browser.find_by_xpath(
+        elems = self.browser.find_by_xpath(
             "//a[matches(@href, 'giveaway.*enter')]"
         )
+        for elem in elems:
+            if elem['href'].endswith('enter'):
+                button = elem
         pdb.set_trace()
         button.click()
 
