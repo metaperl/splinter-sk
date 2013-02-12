@@ -1,19 +1,12 @@
 #!/usr/bin/python
 
 import pdb
+import sys
+import traceback
 
 from splinter import Browser
+import user as userdata
 
-user = dict(
-    email = "schemelab@gmail.com",
-    first_name = "Terrence",
-    last_name = "Brannon",
-    phone_number = "818-359-0893",
-    address = "713 Chadford Rd",
-    city = "Irmo",
-    state = "usa-sc",
-    zip = "29063"
-)
 
 base_url = 'http://www.sheknows.com'
 
@@ -33,7 +26,8 @@ class ContestEntry(object):
     def mystyle(url):
         return "singlehood" in url
 
-    def __init__(self, browser, url):
+    def __init__(self, user, browser, url):
+        self.user=user
         self.browser=browser
         self.url=url
         self.email_name_attribute = "data[GiveawayEntry][email]"
@@ -43,7 +37,7 @@ class ContestEntry(object):
         button.click()
 
     def _enter_email(self):
-        self.browser.fill(self.email_name_attribute, user['email'])
+        self.browser.fill(self.email_name_attribute, self.user['email'])
 
     def click_email_submit(self):
         button = self.browser.find_by_xpath('//*[@class="submit button"]')
@@ -54,14 +48,14 @@ class ContestEntry(object):
         self.click_email_submit()
 
     def enter_contact_info(self):
-        for k, v in user.items():
+        for k, v in self.user.items():
             if k == 'state': continue
             field_name = "data[GiveawayEntry][{0}]".format(k)
             if k == 'address' or k == 'city' or k == 'zip':
                 field_name = "data[GiveawayEntryAddress][{0}]".format(k)
             self.browser.fill(field_name, v)
         e = self.browser.find_by_xpath(
-            '//*[@value="{0}"]'.format(user['state'])
+            '//*[@value="{0}"]'.format(self.user['state'])
         )
         e._element.click()
         self.submit_contact_info()
@@ -91,8 +85,8 @@ class ContestEntry2(ContestEntry):
     def mystyle(url):
         return "500-happy" in url
 
-    def __init__(self, browser, url):
-        super(ContestEntry2, self).__init__(browser, url)
+    def __init__(self, user, browser, url):
+        super(ContestEntry2, self).__init__(user, browser, url)
 
     def click_submit(self):
         button = self.browser.find_by_xpath('//*[@class="giveaway-button"]')
@@ -118,8 +112,8 @@ class ContestEntry3(ContestEntry2):
         strs = "hummus kenra stiletto lillian chicco chanel anolon".split()
         return any(s in url for s in strs)
 
-    def __init__(self, browser, url):
-        super(ContestEntry3, self).__init__(browser, url)
+    def __init__(self, user, browser, url):
+        super(ContestEntry3, self).__init__(user, browser, url)
 
     def click_submit(self):
         button = self.browser.find_by_xpath('//*[@class="giveaway-button"]')
@@ -129,7 +123,7 @@ class ContestEntry3(ContestEntry2):
         elems = self.browser.find_by_xpath("//a[contains(@href, 'enter')]")
 
         for elem in elems:
-            print "<ELEM>{0}</ELEM>".format(elem['href'])
+            #print "<ELEM>{0}</ELEM>".format(elem['href'])
             if elem['href'].endswith('enter'):
                 button = elem
         button.click()
@@ -153,7 +147,6 @@ class ContestEntry3(ContestEntry2):
 
 
 
-
 def different_browser_flow(url):
     strs = "500-happy hummus kenra stiletto lillian chicco chanel anolon".split()
     return any(s in url for s in strs)
@@ -164,15 +157,18 @@ with Browser() as browser:
     browser.visit(initial_url)
 
     for url in contest_urls(browser):
+        for user in userdata.users:
 
-        try:
-            if ContestEntry.mystyle(url):
-                ContestEntry(browser, url).enter_contest()
-            elif ContestEntry2.mystyle(url):
-                ContestEntry2(browser, url).enter_contest()
-            elif ContestEntry3.mystyle(url):
-                ContestEntry3(browser, url).enter_contest()
-            else:
-                print "Ignoring {0}".format(url)
-        except:
-            print "CAUGHT EXCEPTION. CONTINUING"
+            try:
+                if ContestEntry.mystyle(url):
+                    ContestEntry(user, browser, url).enter_contest()
+                elif ContestEntry2.mystyle(url):
+                    ContestEntry2(user, browser, url).enter_contest()
+                elif ContestEntry3.mystyle(url):
+                    ContestEntry3(user, browser, url).enter_contest()
+                else:
+                    print "Ignoring {0}".format(url)
+            except AttributeError as e:
+                traceback.print_exc()
+            except :
+                print "Unexpected error:", sys.exc_info()[0]

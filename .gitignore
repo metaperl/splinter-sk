@@ -3,6 +3,8 @@
 .#*
 #*#
 
+user.py
+
 *.py[cod]
 
 # C extensions
