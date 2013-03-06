@@ -22,9 +22,17 @@ def contest_url(path):
 
 class ContestEntry(object):
 
+    def enter_contest(self):
+        print "\tEntering contest {0}".format(self.url)
+        self.browser.visit(self.url)
+        self.enter_email()
+        self.enter_contact_info()
+        self.confirm_info()
+        self.accept_terms()
+
     @staticmethod
     def mystyle(url):
-        return "singlehood" in url
+        return "jam-out" in url
 
     def __init__(self, user, browser, url):
         self.user=user
@@ -70,20 +78,11 @@ class ContestEntry(object):
         button = self.find_accept_button()
         button.click()
 
-
-    def enter_contest(self):
-        print "\tEntering contest {0}".format(self.url)
-        self.browser.visit(self.url)
-        self.enter_email()
-        self.enter_contact_info()
-        self.confirm_info()
-        self.accept_terms()
-
 class ContestEntry2(ContestEntry):
 
     @staticmethod
     def mystyle(url):
-        return "500-happy" in url
+        return False
 
     def __init__(self, user, browser, url):
         super(ContestEntry2, self).__init__(user, browser, url)
@@ -107,9 +106,19 @@ class ContestEntry2(ContestEntry):
 
 class ContestEntry3(ContestEntry2):
 
+    def enter_contest(self):
+        print "\tEntering contest {0}".format(self.url)
+        self.browser.visit(self.url)
+
+        self.click_enter_now()
+
+        self.enter_contact_info()
+        self.confirm_info()
+        self.accept_terms()
+
     @staticmethod
     def mystyle(url):
-        strs = "hummus kenra stiletto lillian chicco chanel anolon".split()
+        strs = "1000-feels".split()
         return any(s in url for s in strs)
 
     def __init__(self, user, browser, url):
@@ -135,40 +144,34 @@ class ContestEntry3(ContestEntry2):
     def find_accept_button(self):
         return self.browser.find_by_xpath("//*[contains(@href, 'thanks')]")
 
-    def enter_contest(self):
-        print "\tEntering contest {0}".format(self.url)
-        self.browser.visit(self.url)
-
-        self.click_enter_now()
-
-        self.enter_contact_info()
-        self.confirm_info()
-        self.accept_terms()
-
-
 
 def different_browser_flow(url):
     strs = "500-happy hummus kenra stiletto lillian chicco chanel anolon".split()
     return any(s in url for s in strs)
 
-with Browser() as browser:
+def main():
 
-    initial_url = "http://www.sheknows.com/contests"
-    browser.visit(initial_url)
+    with Browser() as browser:
 
-    for url in contest_urls(browser):
-        for user in userdata.users:
+        initial_url = "http://www.sheknows.com/contests"
+        browser.visit(initial_url)
 
-            try:
-                if ContestEntry.mystyle(url):
-                    ContestEntry(user, browser, url).enter_contest()
-                elif ContestEntry2.mystyle(url):
-                    ContestEntry2(user, browser, url).enter_contest()
-                elif ContestEntry3.mystyle(url):
-                    ContestEntry3(user, browser, url).enter_contest()
-                else:
-                    print "Ignoring {0}".format(url)
-            except AttributeError as e:
-                traceback.print_exc()
-            except :
-                print "Unexpected error:", sys.exc_info()[0]
+        for url in contest_urls(browser):
+            for user in userdata.users:
+
+                try:
+                    if ContestEntry.mystyle(url):
+                        ContestEntry(user, browser, url).enter_contest()
+                    elif ContestEntry2.mystyle(url):
+                        ContestEntry2(user, browser, url).enter_contest()
+                    elif ContestEntry3.mystyle(url):
+                        ContestEntry3(user, browser, url).enter_contest()
+                    else:
+                        print "Ignoring {0}".format(url)
+                except AttributeError as e:
+                    traceback.print_exc()
+                except :
+                    print "Unexpected error:", sys.exc_info()[0]
+
+if __name__ == '__main__':
+    main()
